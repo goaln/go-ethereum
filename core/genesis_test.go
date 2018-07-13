@@ -91,8 +91,9 @@ func TestSetupGenesis(t *testing.T) {
 				customg.MustCommit(db)
 				return SetupGenesisBlock(db, nil)
 			},
-			wantHash:   customghash,
-			wantConfig: customg.Config,
+			wantHash: customghash,
+			//wantConfig: customg.Config,
+			wantConfig: &params.ChainConfig{HomesteadBlock: big.NewInt(3), IsQuorum: true},
 		},
 		{
 			name: "custom block in DB, genesis == testnet",

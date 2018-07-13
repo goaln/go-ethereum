@@ -30,6 +30,7 @@ var Modules = map[string]string{
 	"shh":        Shh_JS,
 	"swarmfs":    SWARMFS_JS,
 	"txpool":     TxPool_JS,
+	"raft":       Raft_JS,
 }
 
 const Chequebook_JS = `
@@ -630,4 +631,30 @@ web3._extend({
 		}),
 	]
 });
+`
+
+const Raft_JS = `
+web3._extend({
+       property: 'raft',
+       methods:
+       [
+       ],
+       properties:
+       [
+               new web3._extend.Property({
+                       name: 'role',
+                       getter: 'raft_role'
+               }),
+               new web3._extend.Method({
+                       name: 'addPeer',
+                       call: 'raft_addPeer',
+                       params: 1
+               }),
+               new web3._extend.Method({
+                       name: 'removePeer',
+                       call: 'raft_removePeer',
+                       params: 1
+               })
+       ]
+})
 `

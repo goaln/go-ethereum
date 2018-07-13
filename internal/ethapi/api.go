@@ -632,7 +632,7 @@ func (s *PublicBlockChainAPI) doCall(ctx context.Context, args CallArgs, blockNr
 	if gas == 0 {
 		gas = math.MaxUint64 / 2
 	}
-	if gasPrice.Sign() == 0 {
+	if gasPrice.Sign() == 0 && !s.b.ChainConfig().IsQuorum {
 		gasPrice = new(big.Int).SetUint64(defaultGasPrice)
 	}
 
@@ -878,6 +878,8 @@ type RPCTransaction struct {
 // representation, with the given location metadata set (if available).
 func newRPCTransaction(tx *types.Transaction, blockHash common.Hash, blockNumber uint64, index uint64) *RPCTransaction {
 	var signer types.Signer = types.FrontierSigner{}
+	//FIX var signer types.Signer = types.HomesteadSigner{}
+	// joel: this is one of the two places we used a wrong signer to print txes
 	if tx.Protected() {
 		signer = types.NewEIP155Signer(tx.ChainId())
 	}
@@ -1055,6 +1057,7 @@ func (s *PublicTransactionPoolAPI) GetTransactionReceipt(ctx context.Context, ha
 	receipt := receipts[index]
 
 	var signer types.Signer = types.FrontierSigner{}
+	//FIX var signer types.Signer = types.HomesteadSigner{}
 	if tx.Protected() {
 		signer = types.NewEIP155Signer(tx.ChainId())
 	}

@@ -150,15 +150,18 @@ func newWorker(config *params.ChainConfig, engine consensus.Engine, coinbase com
 		agents:         make(map[Agent]struct{}),
 		unconfirmed:    newUnconfirmedBlocks(eth.BlockChain(), miningLogAtDepth),
 	}
-	// Subscribe NewTxsEvent for tx pool
-	worker.txsSub = eth.TxPool().SubscribeNewTxsEvent(worker.txsCh)
-	// Subscribe events for blockchain
-	worker.chainHeadSub = eth.BlockChain().SubscribeChainHeadEvent(worker.chainHeadCh)
-	worker.chainSideSub = eth.BlockChain().SubscribeChainSideEvent(worker.chainSideCh)
-	go worker.update()
 
-	go worker.wait()
-	worker.commitNewWork()
+	if !config.IsQuorum {
+		// Subscribe NewTxsEvent for tx pool
+		worker.txsSub = eth.TxPool().SubscribeNewTxsEvent(worker.txsCh)
+		// Subscribe events for blockchain
+		worker.chainHeadSub = eth.BlockChain().SubscribeChainHeadEvent(worker.chainHeadCh)
+		worker.chainSideSub = eth.BlockChain().SubscribeChainSideEvent(worker.chainSideCh)
+		go worker.update()
+
+		go worker.wait()
+		worker.commitNewWork()
+	}
 
 	return worker
 }
@@ -359,8 +362,9 @@ func (self *worker) makeCurrent(parent *types.Block, header *types.Header) error
 		return err
 	}
 	work := &Work{
-		config:    self.config,
-		signer:    types.NewEIP155Signer(self.config.ChainID),
+		config: self.config,
+		signer: types.NewEIP155Signer(self.config.ChainID),
+		//FIX signer:    types.MakeSigner(self.config, header.Number),
 		state:     state,
 		ancestors: set.New(),
 		family:    set.New(),

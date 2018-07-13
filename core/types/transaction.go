@@ -117,7 +117,11 @@ func (tx *Transaction) Protected() bool {
 func isProtectedV(V *big.Int) bool {
 	if V.BitLen() <= 8 {
 		v := V.Uint64()
-		return v != 27 && v != 28
+		//return v != 27 && v != 28
+		// 27 / 28 are pre eip 155 -- ie unprotected.
+		// TODO(joel): this is a hack. Everywhere else we maintain vanilla ethereum
+		// compatibility and we should figure out how to extend that to here
+		return !(v == 27 || v == 28 || v == 37 || v == 38)
 	}
 	// anything not 27 or 28 are considered unprotected
 	return true

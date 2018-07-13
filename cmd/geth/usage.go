@@ -136,6 +136,21 @@ var AppHelpFlagGroups = []flagGroup{
 		},
 	},
 	{
+		Name: "QUORUM",
+		Flags: []cli.Flag{
+			utils.EnableNodePermissionFlag,
+		},
+	},
+	{
+		Name: "RAFT",
+		Flags: []cli.Flag{
+			utils.RaftModeFlag,
+			utils.RaftBlockTimeFlag,
+			utils.RaftJoinExistingFlag,
+			utils.RaftPortFlag,
+		},
+	},
+	{
 		Name: "ACCOUNT",
 		Flags: []cli.Flag{
 			utils.UnlockedAccountFlag,
