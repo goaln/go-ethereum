@@ -73,6 +73,10 @@ func (b *EthAPIBackend) HeaderByNumber(ctx context.Context, blockNr rpc.BlockNum
 func (b *EthAPIBackend) BlockByNumber(ctx context.Context, blockNr rpc.BlockNumber) (*types.Block, error) {
 	// Pending block is only known by the miner
 	if blockNr == rpc.PendingBlockNumber {
+		if b.eth.protocolManager.raftMode {
+			// Use latest instead.
+			return b.eth.blockchain.CurrentBlock(), nil
+		}
 		block := b.eth.miner.PendingBlock()
 		return block, nil
 	}
@@ -86,6 +90,15 @@ func (b *EthAPIBackend) BlockByNumber(ctx context.Context, blockNr rpc.BlockNumb
 func (b *EthAPIBackend) StateAndHeaderByNumber(ctx context.Context, blockNr rpc.BlockNumber) (*state.StateDB, *types.Header, error) {
 	// Pending state is only known by the miner
 	if blockNr == rpc.PendingBlockNumber {
+		if b.eth.protocolManager.raftMode {
+			// Use latest instead.
+			header, err := b.HeaderByNumber(ctx, rpc.LatestBlockNumber)
+			if header == nil || err != nil {
+				return nil, nil, err
+			}
+			publicState, err := b.eth.BlockChain().StateAt(header.Root)
+			return publicState, header, err
+		}
 		block, state := b.eth.miner.Pending()
 		return state, block.Header(), nil
 	}
@@ -202,7 +215,11 @@ func (b *EthAPIBackend) ProtocolVersion() int {
 }
 
 func (b *EthAPIBackend) SuggestPrice(ctx context.Context) (*big.Int, error) {
-	return b.gpo.SuggestPrice(ctx)
+	if b.ChainConfig().IsQuorum {
+		return big.NewInt(0), nil
+	} else {
+		return b.gpo.SuggestPrice(ctx)
+	}
 }
 
 func (b *EthAPIBackend) ChainDb() ethdb.Database {
