@@ -45,6 +45,8 @@ type Node struct {
 	UDP, TCP uint16 // port numbers
 	ID       NodeID // the node's public key
 
+	RaftPort uint16
+
 	// This is a cached copy of sha3(ID) which is used for node
 	// distance calculations. This is part of Node in order to make it
 	// possible to write tests that need a node at a certain distance.
@@ -98,6 +100,10 @@ func (n *Node) validateComplete() error {
 	return err
 }
 
+func (n *Node) HasRaftPort() bool {
+	return n.RaftPort > 0
+}
+
 // The string representation of a Node is a URL.
 // Please see ParseNode for a description of the format.
 func (n *Node) String() string {
@@ -110,6 +116,15 @@ func (n *Node) String() string {
 		u.Host = addr.String()
 		if n.UDP != n.TCP {
 			u.RawQuery = "discport=" + strconv.Itoa(int(n.UDP))
+		}
+
+		if n.HasRaftPort() {
+			raftQuery := "raftport=" + strconv.Itoa(int(n.RaftPort))
+			if len(u.RawQuery) > 0 {
+				u.RawQuery = u.RawQuery + "&" + raftQuery
+			} else {
+				u.RawQuery = raftQuery
+			}
 		}
 	}
 	return u.String()
@@ -195,7 +210,17 @@ func parseComplete(rawurl string) (*Node, error) {
 			return nil, errors.New("invalid discport in query")
 		}
 	}
-	return NewNode(id, ip, uint16(udpPort), uint16(tcpPort)), nil
+
+	node := NewNode(id, ip, uint16(udpPort), uint16(tcpPort))
+
+	if qv.Get("raftport") != "" {
+		raftPort, err := strconv.ParseUint(qv.Get("raftport"), 10, 16)
+		if err != nil {
+			return nil, errors.New("invalid raftport in query")
+		}
+		node.RaftPort = uint16(raftPort)
+	}
+	return node, nil
 }
 
 // MustParseNode parses a node URL. It panics if the URL is not valid.
