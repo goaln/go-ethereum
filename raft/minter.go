@@ -65,13 +65,14 @@ type minter struct {
 	txPreSub                event.Subscription
 }
 
-func newMinter(config *params.ChainConfig, eth *RaftService, blockTime time.Duration) *minter {
+func newMinter(config *params.ChainConfig, eth *RaftService, blockTime time.Duration, cb common.Address) *minter {
 	minter := &minter{
 		config:           config,
 		eth:              eth,
 		mux:              eth.EventMux(),
 		chainDb:          eth.ChainDb(),
 		chain:            eth.BlockChain(),
+		coinbase:         cb,
 		shouldMine:       channels.NewRingChannel(1),
 		blockTime:        blockTime,
 		speculativeChain: newSpeculativeChain(),
