@@ -334,11 +334,11 @@ func (bc *BlockChain) FastSyncCommitHead(hash common.Hash) error {
 
 // GasLimit returns the gas limit of the current HEAD block.
 func (bc *BlockChain) GasLimit() uint64 {
-	if bc.Config().IsQuorum {
-		return math.MaxUint64 // HACK(joel) a very large number
-	} else {
-		return bc.CurrentBlock().GasLimit()
-	}
+	//if bc.Config().IsQuorum {
+	//	return math.MaxUint64 // HACK(joel) a very large number
+	//} else {
+	return bc.CurrentBlock().GasLimit()
+	//}
 }
 
 // CurrentBlock retrieves the current head block of the canonical chain. The

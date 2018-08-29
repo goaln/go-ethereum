@@ -582,8 +582,8 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	}
 	// Drop non-local transactions under our own minimal accepted gas price
 	local = local || pool.locals.contains(from) // account may be local even if the transaction arrived from the network
-	if !isQuorum && !local && pool.gasPrice.Cmp(tx.GasPrice()) > 0 {
-		//if !local && pool.gasPrice.Cmp(tx.GasPrice()) > 0 {
+	//if !isQuorum && !local && pool.gasPrice.Cmp(tx.GasPrice()) > 0 {
+	if !local && pool.gasPrice.Cmp(tx.GasPrice()) > 0 {
 		return ErrUnderpriced
 	}
 	// Ensure the transaction adheres to nonce ordering
@@ -599,8 +599,8 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	if err != nil {
 		return err
 	}
-	if !isQuorum && tx.Gas() < intrGas {
-		//if tx.Gas() < intrGas {
+	//if !isQuorum && tx.Gas() < intrGas {
+	if tx.Gas() < intrGas {
 		return ErrIntrinsicGas
 	}
 	return nil
@@ -945,17 +945,17 @@ func (pool *TxPool) promoteExecutables(accounts []common.Address) {
 			pool.all.Remove(hash)
 			pool.priced.Removed()
 		}
-		if !isQuorum {
-			// Drop all transactions that are too costly (low balance or out of gas)
-			drops, _ := list.Filter(pool.currentState.GetBalance(addr), pool.currentMaxGas)
-			for _, tx := range drops {
-				hash := tx.Hash()
-				log.Trace("Removed unpayable queued transaction", "hash", hash)
-				pool.all.Remove(hash)
-				pool.priced.Removed()
-				queuedNofundsCounter.Inc(1)
-			}
+		//if !isQuorum {
+		// Drop all transactions that are too costly (low balance or out of gas)
+		drops, _ := list.Filter(pool.currentState.GetBalance(addr), pool.currentMaxGas)
+		for _, tx := range drops {
+			hash := tx.Hash()
+			log.Trace("Removed unpayable queued transaction", "hash", hash)
+			pool.all.Remove(hash)
+			pool.priced.Removed()
+			queuedNofundsCounter.Inc(1)
 		}
+		//}
 
 		// Gather all executable transactions and promote them
 		for _, tx := range list.Ready(pool.pendingState.GetNonce(addr)) {
